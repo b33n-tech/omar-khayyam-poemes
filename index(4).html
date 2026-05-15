@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>خیام</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #000;
+  --ink-2: #444;
+  --ink-3: #999;
+  --bg: #fff;
+  --line: #e0e0e0;
+  --line-soft: #f0f0f0;
+  --hl: #f7f7f7;
+  --fa: 'Scheherazade New', 'Traditional Arabic', serif;
+  --ui: 'Atkinson Hyperlegible', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--ui);
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+nav {
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.nav-top {
+  padding: 20px 16px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nav-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.btn-add {
+  font-family: var(--ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  width: 100%;
+}
+.btn-add:hover { background: #222; }
+
+.poem-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+.poem-list::-webkit-scrollbar { width: 3px; }
+.poem-list::-webkit-scrollbar-thumb { background: var(--line); }
+
+.poem-entry {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--line-soft);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  transition: background 0.1s;
+}
+.poem-entry:hover { background: var(--hl); }
+.poem-entry.active { background: var(--hl); border-right: 3px solid var(--ink); }
+.poem-entry .num { font-size: 10px; color: var(--ink-3); padding-top: 3px; flex-shrink: 0; min-width: 16px; text-align: center; }
+.poem-entry .preview { font-family: var(--fa); font-size: 14px; line-height: 1.7; direction: rtl; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.poem-entry.active .preview { color: var(--ink); }
+.poem-entry .del { background: none; border: none; cursor: pointer; color: var(--line); font-size: 14px; line-height: 1; flex-shrink: 0; padding: 2px; opacity: 0; transition: opacity 0.1s; }
+.poem-entry:hover .del { opacity: 1; }
+.poem-entry .del:hover { color: #c00; }
+
+main { padding: 52px 64px 80px; max-width: 800px; }
+
+.empty { padding-top: 20px; color: var(--ink-3); font-size: 13px; line-height: 1.8; }
+
+.poem-meta { margin-bottom: 44px; }
+.poem-ref { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
+.poem-title { font-size: 15px; font-weight: 700; }
+
+.verses { display: flex; flex-direction: column; }
+
+.verse-block {
+  border-top: 1px solid var(--line-soft);
+  padding: 20px;
+  margin: 0 -20px;
+  display: grid;
+  grid-template-columns: 20px 1fr 1px 1fr;
+  align-items: center;
+  gap: 0 14px;
+  transition: background 0.1s;
+}
+.verse-block:last-child { border-bottom: 1px solid var(--line-soft); }
+.verse-block:hover { background: var(--hl); }
+
+.vnum { font-size: 10px; color: var(--ink-3); text-align: center; }
+
+.hem { font-family: var(--fa); font-size: 26px; line-height: 2; direction: rtl; color: var(--ink); }
+.hem-a { text-align: right; }
+.hem-b { text-align: left; }
+
+.vsep { width: 1px; height: 32px; background: var(--line); align-self: center; }
+
+.hem.masked {
+  color: var(--bg);
+  background: var(--ink);
+  border-radius: 2px;
+  cursor: pointer;
+  user-select: none;
+}
+.hem.masked:hover { background: #333; }
+
+.toolbar {
+  margin-top: 48px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.tlabel { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); margin-right: 4px; }
+.tb { font-family: var(--ui); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid var(--line); background: var(--bg); color: var(--ink-2); padding: 6px 12px; cursor: pointer; transition: all 0.1s; }
+.tb:hover { border-color: var(--ink); color: var(--ink); }
+.tb.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.hint-bar { margin-top: 24px; font-size: 11px; color: var(--ink-3); line-height: 1.8; }
+
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 50; align-items: center; justify-content: center; }
+.overlay.open { display: flex; }
+
+.modal { background: var(--bg); border: 1px solid var(--ink); padding: 28px; width: 520px; max-width: 94vw; display: flex; flex-direction: column; gap: 18px; }
+.modal-title { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+.field input, .field textarea { font-family: var(--ui); font-size: 13px; border: 1px solid var(--line); padding: 9px 11px; color: var(--ink); background: var(--bg); width: 100%; transition: border-color 0.1s; }
+.field input:focus, .field textarea:focus { outline: none; border-color: var(--ink); }
+.field textarea { font-family: var(--fa); font-size: 20px; line-height: 2.2; direction: rtl; text-align: right; min-height: 180px; resize: vertical; }
+.modal-hint { font-size: 11px; color: var(--ink-3); line-height: 1.6; padding: 8px 10px; background: var(--hl); border: 1px solid var(--line-soft); }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-cancel { font-family: var(--ui); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid var(--line); background: var(--bg); color: var(--ink-2); padding: 8px 16px; cursor: pointer; }
+.btn-save { font-family: var(--ui); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); padding: 8px 16px; cursor: pointer; }
+.btn-save:hover { background: #222; }
+
+@media (max-width: 640px) {
+  body { grid-template-columns: 1fr; }
+  nav { position: static; height: auto; max-height: 180px; border-left: none; border-bottom: 1px solid var(--line); }
+  main { padding: 24px 20px 60px; }
+  .verse-block { grid-template-columns: 16px 1fr; }
+  .vsep, .hem-b { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-top">
+    <span class="nav-title">Rubaïyat — خیام</span>
+    <button class="btn-add" onclick="openModal()">+ Ajouter</button>
+  </div>
+  <div class="poem-list" id="poemList"></div>
+</nav>
+
+<main id="main"></main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-title">Nouveau quatrain</div>
+    <div class="field">
+      <label>Référence (optionnel)</label>
+      <input type="text" id="iTitle" placeholder="Rubaï n°48 — le temps…">
+    </div>
+    <div class="field">
+      <label>Texte farsi — un vers par ligne</label>
+      <textarea id="iText" placeholder="یک چند به کودکی به استاد شدیم&#10;یک چند به استادی خود شاد شدیم&#10;پایان سخن نگر که ما را چه رسید&#10;چون آب در آمدیم و چون باد شدیم"></textarea>
+    </div>
+    <div class="modal-hint">4 lignes = 4 vers. Chaque vers est découpé en deux hémistiches.</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="savePoem()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let poems = [];
+let cur = null;
+let maskMode = 'none';
+
+function persist() { localStorage.setItem('khayyam_v2', JSON.stringify(poems)); }
+function hydrate() { try { const d = localStorage.getItem('khayyam_v2'); if (d) poems = JSON.parse(d); } catch(e){} }
+
+function parseVerses(text) {
+  return text.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
+    const chars = [...line];
+    const mid = Math.round(chars.length / 2);
+    let best = -1, bestD = Infinity;
+    chars.forEach((c, i) => {
+      if (c === ' ') { const d = Math.abs(i - mid); if (d < bestD) { bestD = d; best = i; } }
+    });
+    if (best > 0) return { full: line, a: chars.slice(0, best).join('').trim(), b: chars.slice(best+1).join('').trim() };
+    return { full: line, a: chars.slice(0, mid).join('').trim(), b: chars.slice(mid).join('').trim() };
+  });
+}
+
+function renderList() {
+  const el = document.getElementById('poemList');
+  el.innerHTML = '';
+  poems.forEach((p, i) => {
+    const d = document.createElement('div');
+    d.className = 'poem-entry' + (p.id === cur ? ' active' : '');
+    d.innerHTML = `<span class="num">${i+1}</span><span class="preview">${p.verses[0]?.full || ''}</span><button class="del" title="Supprimer" onclick="delPoem(event,'${p.id}')">×</button>`;
+    d.addEventListener('click', e => { if (!e.target.classList.contains('del')) select(p.id); });
+    el.appendChild(d);
+  });
+}
+
+function select(id) {
+  cur = id;
+  maskMode = 'none';
+  renderList();
+  renderMain();
+}
+
+function renderMain() {
+  const main = document.getElementById('main');
+  const poem = poems.find(p => p.id === cur);
+
+  if (!poem) {
+    main.innerHTML = `<div class="empty">Aucun quatrain sélectionné.<br>Cliquez sur <strong>+ Ajouter</strong> pour commencer.</div>`;
+    return;
+  }
+
+  const versesHtml = poem.verses.map((v, i) => {
+    const aMasked = (maskMode === 'a' || maskMode === 'both');
+    const bMasked = (maskMode === 'b' || maskMode === 'both');
+    return `<div class="verse-block">
+      <span class="vnum">${i+1}</span>
+      <div class="hem hem-a${aMasked ? ' masked' : ''}">${v.a}</div>
+      <div class="vsep"></div>
+      <div class="hem hem-b${bMasked ? ' masked' : ''}">${v.b}</div>
+    </div>`;
+  }).join('');
+
+  const tb = (mode, label) =>
+    `<button class="tb${maskMode === mode ? ' on' : ''}" onclick="setMask('${mode}')">${label}</button>`;
+
+  main.innerHTML = `
+    <div class="poem-meta">
+      <div class="poem-ref">خیام — Omar Khayyam</div>
+      ${poem.title ? `<div class="poem-title">${poem.title}</div>` : ''}
+    </div>
+    <div class="verses" id="verses">${versesHtml}</div>
+    <div class="toolbar">
+      <span class="tlabel">Masquer</span>
+      ${tb('none','Rien')}
+      ${tb('a','Début')}
+      ${tb('b','Fin')}
+      ${tb('both','Tout')}
+    </div>
+    <div class="hint-bar">
+      Cliquez sur un hémistiche masqué pour le révéler.<br>
+      Méthode : lire · fermer les yeux · réciter · vérifier.
+    </div>
+  `;
+
+  document.getElementById('verses').addEventListener('click', e => {
+    const hem = e.target.closest('.hem.masked');
+    if (hem) hem.classList.remove('masked');
+  });
+}
+
+function setMask(mode) { maskMode = mode; renderMain(); }
+
+function openModal() {
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(() => document.getElementById('iText').focus(), 60);
+}
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('iText').value = '';
+  document.getElementById('iTitle').value = '';
+}
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('overlay')) closeModal();
+});
+
+function savePoem() {
+  const text = document.getElementById('iText').value.trim();
+  const title = document.getElementById('iTitle').value.trim();
+  if (!text) { document.getElementById('iText').focus(); return; }
+  const verses = parseVerses(text);
+  if (!verses.length) return;
+  const p = { id: Date.now().toString(36) + Math.random().toString(36).slice(2,5), title, raw: text, verses };
+  poems.push(p);
+  persist();
+  closeModal();
+  renderList();
+  select(p.id);
+}
+
+function delPoem(e, id) {
+  e.stopPropagation();
+  if (!confirm('Supprimer ce quatrain ?')) return;
+  poems = poems.filter(p => p.id !== id);
+  if (cur === id) cur = poems[0]?.id || null;
+  persist();
+  renderList();
+  renderMain();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'Escape') closeModal();
+});
+
+hydrate();
+
+if (!poems.length) {
+  const raw = `یک چند به کودکی به استاد شدیم\nیک چند به استادی خود شاد شدیم\nپایان سخن نگر که ما را چه رسید\nچون آب در آمدیم و چون باد شدیم`;
+  poems.push({ id: 'default', title: 'Le temps qui passe', raw, verses: parseVerses(raw) });
+  persist();
+}
+
+renderList();
+select(poems[0].id);
+</script>
+</body>
+</html>
